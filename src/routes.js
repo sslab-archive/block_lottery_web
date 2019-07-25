@@ -24,6 +24,7 @@ import Create from "@material-ui/icons/Create"
 // core components/views for Admin layout
 import DashboardPage from "views/Dashboard/Dashboard.jsx";
 import Icons from "views/Icons/Icons.jsx";
+import CreateEvent from "views/CreateEvent/CreateEvent";
 // core components/views for RTL layout
 
 const dashboardRoutes = [
@@ -36,14 +37,14 @@ const dashboardRoutes = [
     },
     {
         path: "/create_event",
-        name: "create event",
+        name: "Create event",
         icon: Create,
-        component: Icons,
+        component: CreateEvent,
         layout: "/main"
     },
     {
         path: "/event_list",
-        name: "event list",
+        name: "Event list",
         icon: ViewList,
         component: Icons,
         layout: "/main"
