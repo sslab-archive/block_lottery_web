@@ -15,9 +15,16 @@ const EventListStyle ={
         marginBottom: "3px",
         textDecoration: "none"
     },
-    root :{
+    root : {
         color: "#e91e63",
+    },
+    select :{
+        width: "100%",
+    },
+    selectLabel:{
+        marginTop: "27px"
     }
+
 };
 
 export default EventListStyle
