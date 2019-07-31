@@ -13,12 +13,12 @@ import TextField from "@material-ui/core/TextField/TextField";
 import Select from "@material-ui/core/Select/Select";
 import MenuItem from "@material-ui/core/MenuItem/MenuItem";
 import InputLabel from "@material-ui/core/InputLabel/InputLabel";
-import FormControl from "@material-ui/core/FormControl/FormControl";
 import FormControlLabel from "@material-ui/core/FormControlLabel/FormControlLabel";
 import Switch from "@material-ui/core/Switch/Switch";
 import AddIcon from '@material-ui/icons/Add';
 import IconButton from "@material-ui/core/IconButton/IconButton";
 import Button from "../../components/CustomButtons/Button";
+import PropTypes from "prop-types";
 
 class CreateEvent extends React.Component {
     render() {
@@ -88,9 +88,6 @@ class CreateEvent extends React.Component {
                                             className={classes.select}
                                             type="date"
                                             id="company-disabled"
-                                            formControlProps={{
-                                                fullWidth: true
-                                            }}
                                         />
                                     </GridItem>
                                     <GridItem xs={12} md={4}>
@@ -199,5 +196,9 @@ class CreateEvent extends React.Component {
         )
     }
 }
+
+CreateEvent.propTypes = {
+    classes: PropTypes.object.isRequired
+};
 
 export default withStyles(EventListStyle)(CreateEvent)
