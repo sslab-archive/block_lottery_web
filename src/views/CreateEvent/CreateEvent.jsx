@@ -13,37 +13,94 @@ import TextField from "@material-ui/core/TextField/TextField";
 import Select from "@material-ui/core/Select/Select";
 import MenuItem from "@material-ui/core/MenuItem/MenuItem";
 import InputLabel from "@material-ui/core/InputLabel/InputLabel";
-import FormControlLabel from "@material-ui/core/FormControlLabel/FormControlLabel";
-import Switch from "@material-ui/core/Switch/Switch";
+import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
 import AddIcon from '@material-ui/icons/Add';
 import IconButton from "@material-ui/core/IconButton/IconButton";
 import Button from "../../components/CustomButtons/Button";
-import PropTypes from "prop-types";
+import {tryCreateLottery} from "../../action/lottery";
+import connect from "react-redux/es/connect/connect";
+import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
+import uuid from "uuid";
 
 class CreateEvent extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            UUID: '',
+            eventName: '',
+            contents: '',
+            deadlineTime: '2017-05-24T00:00',
+            viewDeadlineTime: '2019-01-01T00:00',
+            maxParticipant: 0,
+            drawTypes: ['DRAW_BLOCK_HASH'],
+            prizes: [{
+                UUID: uuid.v4(),
+                title: '',
+                memo: '',
+                winnerNum: 0
+            }],
+            targetBlock: {
+                blockType: 'BITCOIN',
+                hash: '',
+                timestamp: 0,
+                height: 0,
+            },
+            eventCreateTx: {
+                ID: '',
+                submitterId: '',
+                submitterAddress: '',
+                timestamp: 0
+            },
+            participants: [
+                {
+                    eventUUID: '',
+                    participantUUID: '',
+                    participantInfo: '',
+                    participateTx: {
+                        ID: '',
+                        submitterId: '',
+                        submitterAddress: '',
+                        timestamp: 0
+                    }
+                }
+            ]
+        };
+    }
+
+    handleRandomSeedTypeChange = (event) => {
+        const value = event.target.value;
+        this.setState((state, props) => {
+            return {targetBlock: {...state.targetBlock, blockType: value}}
+        });
+    };
+
+    handleEventNameChange = (event) => {
+        const value = event.target.value;
+        this.setState(() => {
+            return {eventName: value}
+        });
+    };
+
+    handleDeadlineDateChange = (event) => {
+        const value = event.target.value;
+        this.setState(() => {
+            let d = new Date(value);
+            return {
+                viewDeadlineTime: value,
+                deadlineTime: Math.floor(d.getTime() / 1000),
+            }
+        })
+    };
+
+
     render() {
-        const {classes} = this.props;
-        const seedType = [
-            {
-                value: '방법1',
-                label: '$',
-            },
-            {
-                value: 'EUR',
-                label: '€',
-            },
-            {
-                value: 'BTC',
-                label: '฿',
-            },
-            {
-                value: 'JPY',
-                label: '¥',
-            },
-        ];
+        const {classes, tryCreateLottery, isLoading} = this.props;
         return (
             <div>
-                <GridContainer>
+                {isLoading ? <CircularProgress
+                    style={{position: "absolute", top: "50%", left: "50%", width: "100px", height: "100px", zIndex: 10}}
+                    className={classes.progress}/> : <div/>}
+                <GridContainer style={{opacity: isLoading ? 0.5 : 1}}>
                     <GridItem xs={12}>
                         <Card>
                             <CardHeader color="primary">
@@ -55,7 +112,8 @@ class CreateEvent extends React.Component {
                                     <GridItem xs={12} sm={12} md={6}>
                                         <CustomInput
                                             labelText="추첨이름 *"
-                                            id="company-disabled"
+                                            value={this.state.eventName}
+                                            onChange={this.handleEventNameChange}
                                             formControlProps={{
                                                 fullWidth: true
                                             }}
@@ -63,13 +121,12 @@ class CreateEvent extends React.Component {
                                     </GridItem>
                                     <GridItem xs={12} sm={12} md={6}>
                                         <InputLabel className={classes.selectLabel}>추첨 랜덤 생성 방법</InputLabel>
-                                        <Select value={"Ten"} className={classes.select}
-                                                inputProps={{
-                                                    name: 'age',
-                                                    id: 'age-simple',
-                                                }}>
-                                            <MenuItem value={"Ten"}>비트코인 해쉬값 기반</MenuItem>
-                                            <MenuItem value={"Twenty"}>사용자 참여 기반</MenuItem>
+                                        <Select value={this.state.targetBlock.blockType} className={classes.select}
+                                                onChange={this.handleRandomSeedTypeChange}>
+                                            <MenuItem value={"BITCOIN"}>비트코인
+                                                해쉬값 기반</MenuItem>
+                                            <MenuItem value={"EOS"}>이오스 해쉬값
+                                                기반</MenuItem>
                                         </Select>
                                     </GridItem>
                                     <GridItem xs={12} sm={12} md={6}>
@@ -80,113 +137,110 @@ class CreateEvent extends React.Component {
                                             formControlProps={{
                                                 fullWidth: true
                                             }}
+                                            onChange={(event) => this.setState({maxParticipant: +event.target.value})}
                                         />
                                     </GridItem>
                                     <GridItem xs={12} sm={12} md={6}>
                                         <InputLabel className={classes.selectLabel}>추첨 마감일</InputLabel>
                                         <TextField
                                             className={classes.select}
-                                            type="date"
-                                            id="company-disabled"
+                                            type="datetime-local"
+                                            value={this.state.viewDeadlineTime}
+                                            onChange={this.handleDeadlineDateChange}
                                         />
                                     </GridItem>
-                                    <GridItem xs={12} md={4}>
-                                        <FormControlLabel
-                                            style={{marginTop: "27px"}}
-                                            control={
-                                                <Switch
-                                                    checked={true}
-                                                    value="조기 마감 가능"
-                                                    color="primary"
-                                                />
-                                            }
-                                            label="조기 마감 가능"
-                                        />
+                                    <GridItem xs={12}>
+                                        <TextField
+                                            label="추첨 상세내용"
+                                            multiline={true}
+                                            value={this.state.contents}
+                                            onChange={(event) => {
+                                                const value = event.target.value;
+                                                this.setState({contents: value})
+                                            }}
+                                            style={{width: "100%", marginTop: "20px"}}
+                                            variant="outlined"
+                                            rows="10"/>
                                     </GridItem>
-                                    <GridItem xs={12} md={4}>
-                                        <FormControlLabel
-                                            style={{marginTop: "27px"}}
-                                            control={
-                                                <Switch
-                                                    checked={true}
-                                                    value="조기 마감 가능"
-                                                    color="primary"
-                                                />
-                                            }
-                                            label="사용자 데이터 암호화"
-                                        />
-                                    </GridItem>
-                                    <GridItem xs={12} md={4}>
-                                        <FormControlLabel
-                                            style={{marginTop: "27px"}}
-                                            control={
-                                                <Switch
-                                                    checked={true}
-                                                    value="조기 마감 가능"
-                                                    color="primary"
-                                                />
-                                            }
-                                            label="당첨자 전체 공개"
-                                        />
-                                    </GridItem>
-                                    <GridItem xs={12} style={{marginTop: "27px"}}>
+                                    <GridItem xs={11} style={{marginTop: "27px"}}>
                                         추첨 항목 *
                                     </GridItem>
-                                    <GridItem xs={6}>
-                                        <CustomInput
-                                            style={{marginTop: "0px"}}
-                                            inputType="text"
-                                            labelText="항목"
-                                            id="company-disabled"
-                                            formControlProps={{
-                                                fullWidth: true
-                                            }}
-                                        />
-                                    </GridItem>
-                                    <GridItem xs={5}>
-                                        <CustomInput
-                                            inputType="number"
-                                            labelText="당첨자 수"
-                                            id="company-disabled"
-                                            formControlProps={{
-                                                fullWidth: true
-                                            }}
-                                        />
-                                    </GridItem>
                                     <GridItem xs={1}>
-                                        <IconButton style={{marginTop: "27px"}}>
+                                        <IconButton style={{marginTop: "27px"}} onClick={() => {
+                                            this.setState((state, props) => {
+                                                return {
+                                                    prizes: [
+                                                        ...state.prizes,
+                                                        {
+                                                            UUID: uuid.v4(),
+                                                            title: '',
+                                                            memo: '',
+                                                            winnerNum: 0
+                                                        }
+                                                    ]
+                                                }
+                                            })
+                                        }}>
                                             <AddIcon color={"primary"}/>
                                         </IconButton>
                                     </GridItem>
-                                    <GridItem xs={6}>
-                                        <CustomInput
-                                            style={{marginTop: "0px"}}
-                                            inputType="text"
-                                            labelText="항목"
-                                            id="company-disabled"
-                                            formControlProps={{
-                                                fullWidth: true
-                                            }}
-                                        />
-                                    </GridItem>
-                                    <GridItem xs={5}>
-                                        <CustomInput
-                                            inputType="number"
-                                            labelText="당첨자 수"
-                                            id="company-disabled"
-                                            formControlProps={{
-                                                fullWidth: true
-                                            }}
-                                        />
-                                    </GridItem>
-                                    <GridItem xs={1}/>
+                                    {this.state.prizes.map((prize, idx) => {
+                                        return <GridItem xs={12} key={prize.UUID}>
+                                            <GridContainer>
+                                                <GridItem xs={6} style={{marginTop: "-35px"}}>
+                                                    <CustomInput
+                                                        inputType="text"
+                                                        labelText="항목"
+                                                        value={prize.title}
+                                                        onChange={(event) => {
+                                                            let data = {
+                                                                prizes: this.state.prizes
+                                                            };
+                                                            data.prizes[idx].title = event.target.value;
+                                                            this.setState(data);
+                                                        }}
+                                                        formControlProps={{
+                                                            fullWidth: true
+                                                        }}
+                                                    />
+                                                </GridItem>
+                                                <GridItem xs={5} style={{marginTop: "-35px"}}>
+                                                    <CustomInput
+                                                        inputType="number"
+                                                        labelText="당첨자 수"
+                                                        value={prize.winnerNum}
+                                                        formControlProps={{
+                                                            fullWidth: true
+                                                        }}
+                                                        onChange={(event) => {
+                                                            let data = {
+                                                                prizes: this.state.prizes
+                                                            };
+                                                            data.prizes[idx].winnerNum = +event.target.value;
+                                                            this.setState(data);
+                                                        }}
+                                                    />
+                                                </GridItem>
+                                                <GridItem xs={1} style={{marginTop: "5px"}}>
+                                                    <IconButton onClick={() => {
+                                                        this.setState((state, props) => {
+                                                            return {
+                                                                prizes: state.prizes.filter(p => p.UUID !== prize.UUID)
+                                                            }
+                                                        })
+                                                    }}>
+                                                        <RemoveCircleIcon color={"primary"}/>
+                                                    </IconButton>
+                                                </GridItem>
+                                            </GridContainer>
+                                        </GridItem>
+                                    })}
                                     <GridItem xs={4}/>
                                     <GridItem xs={4}>
-                                        <Button color={"primary"}>추첨 생성 </Button>
+                                        <Button color={"primary"} style={{width: "100%"}}
+                                                onClick={() => tryCreateLottery(this.state)}> 추첨 생성 </Button>
                                     </GridItem>
                                     <GridItem xs={4}/>
-
-
                                 </GridContainer>
                             </CardBody>
                         </Card>
@@ -195,10 +249,17 @@ class CreateEvent extends React.Component {
             </div>
         )
     }
+
 }
 
-CreateEvent.propTypes = {
-    classes: PropTypes.object.isRequired
+const mapStateToProps = (state) => {
+    return {
+        isLoading: state.commonStatus.isLoading
+    }
 };
 
-export default withStyles(EventListStyle)(CreateEvent)
+const mapDispatchToProps = {
+    tryCreateLottery: tryCreateLottery,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(EventListStyle)(CreateEvent));

@@ -25,6 +25,8 @@ import Create from "@material-ui/icons/Create"
 import DashboardPage from "views/Dashboard/Dashboard.jsx";
 import Icons from "views/Icons/Icons.jsx";
 import CreateEvent from "views/CreateEvent/CreateEvent";
+import EventList from "./views/EventList/EventList";
+import {CheckCircle, SettingsApplications} from "@material-ui/icons";
 // core components/views for RTL layout
 
 const dashboardRoutes = [
@@ -46,7 +48,14 @@ const dashboardRoutes = [
         path: "/event_list",
         name: "Event list",
         icon: ViewList,
-        component: Icons,
+        component: EventList,
+        layout: "/main"
+    },
+    {
+        path: "/verify",
+        name: "Verify Event",
+        icon: CheckCircle,
+        component: EventList,
         layout: "/main"
     },
     {
@@ -55,7 +64,14 @@ const dashboardRoutes = [
         icon: QnA,
         component: Icons,
         layout: "/main"
-    }
+    },
+    {
+        path: "/admin",
+        name: "Admin Page",
+        icon: SettingsApplications,
+        component: EventList,
+        layout: "/main"
+    },
 ];
 
 export default dashboardRoutes;

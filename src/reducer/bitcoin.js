@@ -16,8 +16,6 @@ const newBitcoinInfo = payload => {
 const bitcoinInfoList = (state = initialState, action) => {
     switch (action.type) {
         case ADD_BITCOIN_BLOCK_INFO:
-            console.log("why not here");
-            console.log(action);
             return {
                 ...state, recentBlocks: [
                     ...state.recentBlocks,

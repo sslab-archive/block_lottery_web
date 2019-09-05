@@ -40,6 +40,7 @@ function CustomInput({...props}) {
         error,
         success,
         inputType,
+        onChange,
     } = props;
 
     const labelClasses = classNames({
@@ -58,6 +59,7 @@ function CustomInput({...props}) {
         <FormControl
             {...formControlProps}
             className={formControlProps.className + " " + classes.formControl}
+            onChange={onChange}
         >
             {labelText !== undefined ? (
                 <InputLabel

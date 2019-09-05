@@ -24,7 +24,7 @@ import "perfect-scrollbar/css/perfect-scrollbar.css";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
 // core components
-import Navbar from "components/Navbars/Navbar.jsx";
+import Footer from "views/footer/footer"
 import Sidebar from "components/Sidebar/Sidebar.jsx";
 
 import routes from "routes";
@@ -33,11 +33,16 @@ import dashboardStyle from "assets/jss/material-dashboard-react/layouts/dashboar
 
 import image from "assets/img/sidebar-2.jpg";
 import logo from "assets/img/reactlogo.png";
+import EventDetail from "../views/EventDetail/EventDetailContainer";
+import {tryCreateLottery} from "../action/lottery";
+import {closeMessage} from "../action/common";
+import connect from "react-redux/es/connect/connect";
 
 let ps;
 
 const switchRoutes = (
     <Switch>
+        <Route path="/main/lottery/:UUID" component={EventDetail}/>
         {routes.map((prop, key) => {
             if (prop.layout === "/main") {
                 return (
@@ -99,7 +104,7 @@ class Dashboard extends React.Component {
     }
 
     render() {
-        const {classes, ...rest} = this.props;
+        const {classes,closeMessage,msgList, ...rest} = this.props;
         return (
             <div className={classes.wrapper}>
                 <Sidebar
@@ -113,16 +118,13 @@ class Dashboard extends React.Component {
                     {...rest}
                 />
                 <div className={classes.mainPanel} ref={this.mainPanel}>
-                    <Navbar
-                        routes={routes}
-                        handleDrawerToggle={this.handleDrawerToggle}
-                        {...rest}
-                    />
-
                     <div className={classes.content}>
                         <div className={classes.container}>{switchRoutes}</div>
                     </div>
-
+                    <Footer
+                        msgList={msgList}
+                        onClose={closeMessage}
+                    />
                 </div>
             </div>
         );
@@ -133,4 +135,18 @@ Dashboard.propTypes = {
     classes: PropTypes.object.isRequired
 };
 
-export default withStyles(dashboardStyle)(Dashboard);
+
+const mapStateToProps = (state) => {
+    return {
+        msgList: state.commonStatus.msgList
+    }
+};
+
+const mapDispatchToProps = dispatch => {
+    return {
+        closeMessage: msg=>dispatch(closeMessage(msg))
+    }
+};
+
+
+export default connect(mapStateToProps,mapDispatchToProps)(withStyles(dashboardStyle)(Dashboard));

@@ -11,7 +11,7 @@ import configureStore from "store/index";
 import reducer from "reducer/index"
 import {Provider} from "react-redux";
 
-const hist = createBrowserHistory();
+export const hist = createBrowserHistory();
 const store = configureStore(reducer);
 const render = () => {
     ReactDOM.render(
