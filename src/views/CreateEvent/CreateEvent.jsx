@@ -21,6 +21,8 @@ import {tryCreateLottery} from "../../action/lottery";
 import connect from "react-redux/es/connect/connect";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 import uuid from "uuid";
+import FormControlLabel from "@material-ui/core/FormControlLabel/FormControlLabel";
+import CheckBox from "@material-ui/core/Checkbox";
 
 class CreateEvent extends React.Component {
     constructor(props) {
@@ -63,7 +65,11 @@ class CreateEvent extends React.Component {
                         timestamp: 0
                     }
                 }
-            ]
+            ],
+            useOtherAuth: false,
+            otherAuthParamStr: '',
+            useYoutubeAuth: false,
+            youtubeAuthURL: '',
         };
     }
 
@@ -235,10 +241,84 @@ class CreateEvent extends React.Component {
                                             </GridContainer>
                                         </GridItem>
                                     })}
+
+                                    <GridItem xs={12} style={{marginTop: "27px"}}>
+                                        인증 사용
+                                    </GridItem>
+                                    <GridItem xs={4}>
+                                        <FormControlLabel
+                                            style={{paddingTop: "35px"}}
+                                            control={
+                                                <CheckBox checked={this.state.useOtherAuth}
+                                                          onChange={(e) => {
+                                                              let data =e.target.checked;
+                                                              this.setState({useOtherAuth:data});
+                                                              if (data === true && this.state.useYoutubeAuth === true) {
+                                                                  this.setState({useYoutubeAuth: false})
+                                                              }
+                                                          }}/>
+                                            }
+                                            label="외부 인증 사용"
+                                        />
+                                    </GridItem>
+                                    <GridItem xs={8}>
+                                        <CustomInput
+                                            labelText="인증에 필요한 목록( , 로 구분 . ex - 인증URL(필수), 이름,휴대폰번호)"
+                                            alue={this.state.otherAuthParamStr}
+                                            onChange={(e)=>{
+                                                const data = e.target.value;
+                                                this.setState({otherAuthParamStr:data})
+                                            }}
+                                            formControlProps={{
+                                                fullWidth: true
+                                            }}
+                                        />
+                                    </GridItem>
+                                    <GridItem xs={4}>
+                                        <FormControlLabel
+                                            style={{paddingTop: "35px"}}
+                                            control={
+                                                <CheckBox checked={this.state.useYoutubeAuth}
+                                                          onChange={(e) => {
+                                                              let data =e.target.checked;
+                                                              this.setState({useYoutubeAuth: data});
+                                                              if (data === true && this.state.useOtherAuth === true) {
+                                                                  this.setState({useOtherAuth: false})
+                                                              }
+                                                          }}/>
+                                            }
+                                            label="유튜브 인증 사용"
+                                        />
+                                    </GridItem>
+                                    <GridItem xs={8}>
+                                        <CustomInput
+                                            labelText="유튜브 링크"
+                                            value={this.state.youtubeAuthURL}
+                                            onChange={(e)=>{
+                                                const data = e.target.value;
+                                                this.setState({youtubeAuthURL:data})
+                                            }}
+                                            formControlProps={{
+                                                fullWidth: true
+                                            }}
+                                        />
+                                    </GridItem>
                                     <GridItem xs={4}/>
                                     <GridItem xs={4}>
                                         <Button color={"primary"} style={{width: "100%"}}
-                                                onClick={() => tryCreateLottery(this.state)}> 추첨 생성 </Button>
+                                                onClick={() => {
+                                                    let createLotteryDto = this.state;
+                                                    if (createLotteryDto.useOtherAuth){
+                                                        if (createLotteryDto.otherAuthParamStr === ""){
+                                                            alert("인증에 사용될 파라미터를 확인해주세요");
+                                                            return;
+                                                        }
+                                                        const authParams = createLotteryDto.otherAuthParamStr.split(",");
+                                                        createLotteryDto.authURL = authParams[0];
+                                                        createLotteryDto.authParams = authParams.slice(1,authParams.length);
+                                                    }
+                                                    tryCreateLottery(createLotteryDto)
+                                                }}> 추첨 생성 </Button>
                                     </GridItem>
                                     <GridItem xs={4}/>
                                 </GridContainer>

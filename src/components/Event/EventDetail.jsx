@@ -47,11 +47,16 @@ const eventDetailStyle = {
 
 export default withStyles(eventDetailStyle)(function (props) {
     const [open, setOpen] = React.useState(false);
-    const [participantData, setParticipantData] = React.useState({email: '', name: ''});
+
     const {
         classes, eventName, createAt, deadlineTime, maxParticipant, currentParticipant, contents, eventUUID,
-        isOpen,isDrawn, onParticipateClick, onDrawClick, prizes, style,
+        isOpen, isDrawn, onParticipateClick, onDrawClick,remainTime, prizes, style, authParams,
     } = props;
+    let inputAuthParams = {};
+    authParams.forEach(v=>{
+        inputAuthParams[v] = "";
+    });
+    const [participantData, setParticipantData] = React.useState({email: '', inputAuthParams: inputAuthParams});
 
     function handleClickOpen() {
         setOpen(true);
@@ -81,6 +86,10 @@ export default withStyles(eventDetailStyle)(function (props) {
                     <GridItem xs={12} sm={6}>
                         <Typography variant={'h3'} className={classes.h3}>최대 참가자수 : {maxParticipant} 명</Typography>
                     </GridItem>
+
+                    <GridItem xs={12} sm={12}>
+                        <Typography variant={'h3'} className={classes.h3}>남은시간 : {remainTime}</Typography>
+                    </GridItem>
                 </GridContainer>
                 <Table className={classes.table}>
                     <TableHead>
@@ -99,7 +108,8 @@ export default withStyles(eventDetailStyle)(function (props) {
                                 </TableCell>
                                 <TableCell align="right">{row.memo}</TableCell>
                                 <TableCell align="right">{row.winnerNum}</TableCell>
-                                <TableCell align="right">{!row.winners ? '추첨 전': row.winners.map(winner=>winner.UUID).toString()}</TableCell>
+                                <TableCell
+                                    align="right">{!row.winners ? '추첨 전' : row.winners.map(winner => winner.UUID).toString()}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
@@ -109,7 +119,8 @@ export default withStyles(eventDetailStyle)(function (props) {
                     <Button color={"success"} style={{width: "30%", marginLeft: "35%"}}
                             onClick={handleClickOpen}>참가하기</Button> :
                     <Button color={"danger"} style={{width: "30%", marginLeft: "35%"}}
-                            disabled={isDrawn} onClick={() => onDrawClick(eventUUID)}>{isDrawn? "추첨완료":"추첨하기"}</Button>}
+                            disabled={isDrawn}
+                            onClick={() => onDrawClick(eventUUID)}>{isDrawn ? "추첨완료" : "추첨하기"}</Button>}
             </Paper>
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle id="form-dialog-title">Subscribe</DialogTitle>
@@ -117,23 +128,48 @@ export default withStyles(eventDetailStyle)(function (props) {
                     <DialogContentText>
                         {eventName}에 참여하기위해 다음 정보를 기입해 주세요
                     </DialogContentText>
-                    <TextField
-                        autoFocus
-                        id="email"
-                        label="Email Address"
-                        type="email"
-                        value={participantData.email}
-                        onChange={event => setParticipantData({...participantData, email: event.target.value})}
-                        fullWidth
-                    />
-                    <TextField
-                        id="name"
-                        label="Name"
-                        type="text"
-                        value={participantData.name}
-                        onChange={event => setParticipantData({...participantData, name: event.target.value})}
-                        fullWidth
-                    />
+                    {authParams === null || authParams.length === 0 ?
+                        //어스파람없는경우
+                        <TextField
+                            autoFocus
+                            id="email"
+                            label="이메일"
+                            type="email"
+                            value={participantData.email}
+                            onChange={event => setParticipantData({...participantData, email: event.target.value})}
+                            fullWidth
+                        />
+                        :
+                        authParams.map((oneAuthParam, idx) => {
+                            return (
+                                <TextField
+                                    autoFocus
+                                    key={idx}
+                                    id={"text" + idx}
+                                    label={oneAuthParam}
+                                    type="text"
+                                    onChange={event => {
+                                        const data = event.target.value;
+                                        setParticipantData({...participantData,inputAuthParams: {
+                                                ...participantData.inputAuthParams,
+                                                [oneAuthParam]:data
+                                            }})
+                                    }
+                                    }
+                                    value={participantData.inputAuthParams[oneAuthParam]}
+                                    fullWidth
+                                />
+                            )
+                        })}
+
+                    {/*<TextField*/}
+                    {/*id="name"*/}
+                    {/*label="Name"*/}
+                    {/*type="text"*/}
+                    {/*value={participantData.name}*/}
+                    {/*onChange={event => setParticipantData({...participantData, name: event.target.value})}*/}
+                    {/*fullWidth*/}
+                    {/*/>*/}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary">

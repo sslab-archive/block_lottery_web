@@ -98,14 +98,17 @@ export function tryParticipateLottery(participateDTO) {
             }, body: JSON.stringify(participateDTO)
         }).then(res => {
             if (!res.ok) {
-                throw Error(res.body.toString())
+                throw res
             }
             return res;
         }).then(res => res.json().then(data => {
             dispatch(participateSuccess(data))
-        })).catch(err => {
-            dispatch(requestFail(err, false));
-            dispatch(addMessage(err.toString(),'error'))
+        })).catch(res => {
+            res.json().then(body=>{
+                dispatch(requestFail(body, false));
+                dispatch(addMessage(body.message,'error'))
+            })
+
         })
             .finally(() => dispatch(endLoading()))
 

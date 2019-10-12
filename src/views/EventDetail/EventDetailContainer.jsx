@@ -22,7 +22,15 @@ class EventDetailContainer extends React.Component {
         const {classes, isLoading, match, tryParticipateLottery, tryDrawLottery, lotteries} = this.props;
 
         const onParticipateClick = function (eventUUID, data) {
-            tryParticipateLottery({eventUUID: eventUUID, participantUUID: data.email, participantInfo: data.name})
+            let authParamList = Object.values(data.inputAuthParams);
+            console.log(data);
+            tryParticipateLottery({
+                eventUUID: eventUUID,
+                participantUUID: data.email ? data.email : authParamList[0],
+                participantInfo: data.name ? data.name : authParamList[1],
+                authParams: authParamList
+            })
+
         };
 
         const onDrawClick = function (eventUUID) {
@@ -46,6 +54,8 @@ class EventDetailContainer extends React.Component {
                                              prizes={event.prizes}
                                              isOpen={Math.floor(Date.now() / 1000) < event.deadlineTime}
                                              isDrawn={event.status === "DRAWN"}
+                                             authParams={event.authParams}
+                                             remainTime={calcRemainTime(event.deadlineTime)}
                                              onParticipateClick={onParticipateClick}
                                              onDrawClick={onDrawClick}
 
@@ -61,6 +71,20 @@ class EventDetailContainer extends React.Component {
 function timestampToString(timestamp) {
     let d = new Date(timestamp * 1000);
     return d.toLocaleDateString() + d.toLocaleTimeString()
+}
+
+function calcRemainTime(deadlineTime) {
+    let diffSeconds = deadlineTime - Math.floor(Date.now() / 1000);
+    if (diffSeconds < 0) return "등록 마감";
+    let min = Math.floor(diffSeconds / 60 % 60);
+    let hour = Math.floor(diffSeconds / 60 / 60 % 60);
+    let day = Math.floor(diffSeconds / 60 / 60 / 24);
+    let returnStr = '';
+    if (day > 0) returnStr += (day.toString() + '일 ');
+    if (hour > 0) returnStr += (hour.toString() + '시간 ');
+    if (min > 0) returnStr += (min.toString() + '분 ');
+    if (returnStr === '') returnStr = '마감 임박';
+    return returnStr;
 }
 
 const mapStateToProps = (state) => {

@@ -14,7 +14,7 @@ const eventStyle = {
 
 
 export default withStyles(eventStyle)(function (props) {
-    const {eventName, createAt, deadlineTime, maxParticipant, currentParticipant, contents, eventUUID,onDetailClick} = props;
+    const {eventName, createAt, deadlineTime,remainTime, maxParticipant, currentParticipant, contents, eventUUID,onDetailClick} = props;
     return (
         <div>
             <Card>
@@ -35,6 +35,7 @@ export default withStyles(eventStyle)(function (props) {
                     <div style={{backgroundColor:'blue',width:'100%',height:'1px', marginBottom:'15px'}}/>
                     <div>생성일 : {createAt}</div>
                     <div>마감일 : {deadlineTime}</div>
+                    <div>남은시간 : {remainTime}</div>
                     <div style={{textAlign:'center'}}>{currentParticipant}/{maxParticipant}</div>
                     <Button color={"info"} style={{width: "70%",marginLeft:"15%"}} onClick={()=>onDetailClick(eventUUID)}>자세히 보기</Button>
                 </CardBody>

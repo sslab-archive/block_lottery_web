@@ -25,7 +25,7 @@ class EventList extends React.Component {
     }
 
     render() {
-        const {lotteries,isLoading} = this.props;
+        const {lotteries, isLoading} = this.props;
 
         function onDetailClick(UUID) {
             hist.push('/main/lottery/' + UUID);
@@ -51,6 +51,7 @@ class EventList extends React.Component {
                                                        maxParticipant={lottery.maxParticipant + "명"}
                                                        currentParticipant={lottery.participants ? lottery.participants.length + "명" : "0명"}
                                                        contents={lottery.contents}
+                                                       remainTime={calcRemainTime(lottery.deadlineTime)}
                                                        onDetailClick={onDetailClick}/>
                                         </GridItem>
                                     </GridContainer>
@@ -69,6 +70,7 @@ class EventList extends React.Component {
                                                        maxParticipant={lottery.maxParticipant + "명"}
                                                        currentParticipant={lottery.participants ? lottery.participants.length + "명" : "0명"}
                                                        contents={lottery.contents}
+                                                       remainTime={calcRemainTime(lottery.deadlineTime)}
                                                        onDetailClick={onDetailClick}/>
                                         </GridItem>
                                         <GridItem sm={false} md={2}/>
@@ -86,6 +88,20 @@ class EventList extends React.Component {
 function timestampToString(timestamp) {
     let d = new Date(timestamp * 1000);
     return d.toLocaleDateString() + d.toLocaleTimeString()
+}
+
+function calcRemainTime(deadlineTime) {
+    let diffSeconds = deadlineTime - Math.floor(Date.now() / 1000);
+    if (diffSeconds < 0) return "등록 마감";
+    let min = Math.floor(diffSeconds / 60 % 60);
+    let hour = Math.floor(diffSeconds / 60 / 60 % 60);
+    let day = Math.floor(diffSeconds / 60 / 60 / 24);
+    let returnStr = '';
+    if (day > 0) returnStr += (day.toString() + '일 ');
+    if (hour > 0) returnStr += (hour.toString() + '시간 ');
+    if (min > 0) returnStr += (min.toString() + '분 ');
+    if (returnStr === '') returnStr = '마감 임박';
+    return returnStr;
 }
 
 const mapStateToProps = (state) => {
